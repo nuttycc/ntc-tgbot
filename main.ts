@@ -5,10 +5,8 @@ import bot from "./src/bot.ts";
 const handleUpdate = webhookCallback(bot, "std/http");
 
 Deno.serve(async (req) => {
-
-  console.log('Server is running...');
-
   if (req.method === "POST") {
+    console.log("Received POST request");
     const url = new URL(req.url);
     if (url.pathname.slice(1) === bot.token) {
       try {
