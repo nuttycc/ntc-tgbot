@@ -7,8 +7,7 @@ const handleUpdate = webhookCallback(bot, "std/http");
 Deno.serve(async (req) => {
   if (req.method === "POST") {
     const url = new URL(req.url);
-    console.log("Received POST request", url.pathname);
-
+    
     if (url.pathname.slice(1) === bot.token) {
       try {
         console.log("Received update");
