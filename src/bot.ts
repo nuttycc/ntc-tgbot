@@ -21,8 +21,6 @@ bot.catch((err) => {
 //   },
 // });
 
-// 替换为您的服务器可公开访问的 URL
-const endpointUrl = "https://ntc-tgbot.nuttycc.deno.net/8477549142:AAEldEm8eKhvv1aFZNLq3C9Dh6mg_n0nql0";
-await bot.api.setWebhook(endpointUrl);
+
 
 export default bot;
