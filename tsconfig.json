@@ -2,8 +2,10 @@
   "compilerOptions": {
     "target": "esnext",
     "module": "esnext",
-    "lib": ["esnext"],
-    "types": ["node"],
+    "types": [
+      "node",
+      "deno"
+    ],
     "moduleResolution": "bundler",
     "baseUrl": "./src",
     "paths": {
@@ -28,8 +30,12 @@
     "esModuleInterop": true,
     "sourceMap": true,
     "declaration": true,
-    "declarationMap": true
+    "declarationMap": true,
+    "jsx": "react-jsx"
   },
-  "include": ["src/**/*"],
+  "include": [
+    "src",
+    "main.ts"
+  ],
   "exclude": ["node_modules", "dist"]
 }
