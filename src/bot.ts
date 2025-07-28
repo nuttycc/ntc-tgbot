@@ -5,7 +5,9 @@ import type { AppContext, SessionData } from '@/types/bot.types.ts';
 import autoTagFeature from './features/auto-tag.feature.ts';
 import channelRulesFeature from './features/channel-rules.feature.ts';
 import { channelRuleMenu } from './menus/channel-rules.menu.ts';
+import { manageChannelMenu } from './menus/manage-channel.menu.ts';
 import { createRuleConversation } from './conversations/create-rule.conversation.ts';
+import { patchedFreeStorage } from './utils/patch.ts';
 
 const bot = new Bot<AppContext>(process.env.BOT_TOKEN || '');
 
@@ -15,8 +17,12 @@ bot.use(
     initial(): SessionData {
       return {};
     },
+    storage: patchedFreeStorage<SessionData>(bot.token),
   }),
 );
+
+// Emoji middleware
+bot.use(emojiParser());
 
 // Conversations middleware
 bot.use(conversations());
@@ -26,9 +32,15 @@ bot.use(createConversation(createRuleConversation, 'createRuleConversation'));
 
 // Register menus
 bot.use(channelRuleMenu);
+bot.use(manageChannelMenu);
 
-// Other middleware
-bot.use(emojiParser());
+// Examples
+// Use persistent session data in update handlers
+bot.on('message', async (ctx, next) => {
+  console.log('Received Message', ctx.message.text);
+  ctx.session.count = (ctx.session.count || 0) + 1;
+  await next();
+});
 
 // Features
 bot.use(autoTagFeature);
@@ -40,22 +52,24 @@ bot.catch((err) => {
   );
 });
 
-bot.start({
-  onStart: async (botInfo) => {
-    console.log(
-      `Bot @${botInfo.username} started at ${new Date().toUTCString()}`,
-    );
+if (process.env.LOCAL_DEV === '1') {
+  bot.start({
+    onStart: async (botInfo) => {
+      console.log(
+        `Bot @${botInfo.username} started at ${new Date().toUTCString()}`,
+      );
 
-    // Set bot commands for better UX
-    await bot.api.setMyCommands([
-      {
-        command: 'manage_rules',
-        description: '管理频道的自动标签规则 (仅私聊)',
-      },
-    ]);
+      // Set bot commands for better UX
+      await bot.api.setMyCommands([
+        {
+          command: 'manage_rules',
+          description: '管理频道的自动标签规则 (仅私聊)',
+        },
+      ]);
 
-    console.log('Bot commands registered successfully');
-  },
-});
+      console.log('Bot commands registered successfully');
+    },
+  });
+}
 
 export default bot;

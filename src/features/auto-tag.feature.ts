@@ -26,8 +26,12 @@ router.route('auto_tag', async (ctx) => {
     const channelId = channelPost.chat.id;
     const channelRules = getChannelRules(channelId);
 
+    console.log('channelRules', channelRules);
+
     // Merge rules: channel rules take priority over default rules
     const effectiveRules = [...channelRules, ...defaultRules];
+
+    console.log('effectiveRules', effectiveRules);
 
     const tags = new Set<string>();
 

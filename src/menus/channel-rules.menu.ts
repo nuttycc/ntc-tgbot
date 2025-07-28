@@ -1,12 +1,20 @@
 import { Menu } from '@grammyjs/menu';
 import type { AppContext } from '@/types/bot.types.ts';
 import { getChannelRules } from '@/storage/channel-rules.storage.ts';
+import {
+  escapeMarkdownV2,
+  formatListForMarkdownV2,
+  formatDomainsForMarkdownV2,
+  formatStrategiesForMarkdownV2,
+} from '@/utils/markdown.ts';
 
 /**
  * Main menu for channel rule management
+ * Layout optimized: 2-3 buttons per row
  */
 export const channelRuleMenu = new Menu<AppContext>('channel-rule-menu')
-  .text('➕ 添加新规则', async (ctx) => {
+  // First row: Add and View (2 buttons)
+  .text('➕ 添加规则', async (ctx) => {
     // Check if there's a channel being configured
     console.log(
       `ctx.session.configuringChannelId: ${ctx.session.configuringChannelId}`,
@@ -25,10 +33,12 @@ export const channelRuleMenu = new Menu<AppContext>('channel-rule-menu')
     await ctx.conversation.enter('createRuleConversation');
     await ctx.answerCallbackQuery('开始创建新规则...');
   })
-  .row()
-  .text('📜 查看已有规则', async (ctx) => {
+  .text('📜 查看规则', async (ctx) => {
     if (!ctx.session.configuringChannelId) {
-      await ctx.answerCallbackQuery('❌ 未选择频道。');
+      await ctx.answerCallbackQuery({
+        text: '❌ 未选择频道。',
+        show_alert: true,
+      });
       return;
     }
 
@@ -37,31 +47,26 @@ export const channelRuleMenu = new Menu<AppContext>('channel-rule-menu')
 
     if (rules.length === 0) {
       await ctx.editMessageText(
-        '📜 **当前规则列表**\n\n' +
-          '🔍 该频道暂无自定义规则。\n\n' +
-          '点击下方按钮添加第一条规则：',
+        `${escapeMarkdownV2('📜 当前规则列表')}\n\n` +
+          `${escapeMarkdownV2('🔍 该频道暂无自定义规则。')}\n\n` +
+          `${escapeMarkdownV2('点击下方按钮添加第一条规则：')}`,
         {
-          parse_mode: 'Markdown',
+          parse_mode: 'MarkdownV2',
           reply_markup: channelRuleMenu,
         },
       );
     } else {
-      let rulesText = '📜 **当前规则列表**\n\n';
+      let rulesText = `${escapeMarkdownV2('📜 当前规则列表')}\n\n`;
       rules.forEach((rule, index) => {
-        rulesText += `**${index + 1}.** 域名: ${rule.domains.join(', ')}\n`;
-        rulesText += `   策略: ${rule.strategies
-          .map((s) => {
-            if (s.type === 'sld') return '二级域名';
-            if (s.type === 'path') return `路径段-${s.segment}`;
-            if (s.type === 'path_last') return '最后路径段';
-            if (s.type === 'path_after') return `路径后缀-${s.prefix}`;
-            return '未知策略';
-          })
-          .join(', ')}\n\n`;
+        const domainsText = formatDomainsForMarkdownV2(rule.domains);
+        rulesText += `${escapeMarkdownV2(`${index + 1}.`)} ${escapeMarkdownV2('域名:')} ${domainsText}\n`;
+        rulesText += `   ${escapeMarkdownV2('策略数量:')} ${rule.strategies.length}\n`;
+
+        rulesText += formatStrategiesForMarkdownV2(rule.strategies) + '\n\n';
       });
 
       await ctx.editMessageText(rulesText, {
-        parse_mode: 'Markdown',
+        parse_mode: 'MarkdownV2',
         reply_markup: channelRuleMenu,
       });
     }
@@ -69,6 +74,7 @@ export const channelRuleMenu = new Menu<AppContext>('channel-rule-menu')
     await ctx.answerCallbackQuery();
   })
   .row()
+  // Second row: Delete and Exit (2 buttons)
   .text('🗑️ 删除规则', async (ctx) => {
     if (!ctx.session.configuringChannelId) {
       await ctx.answerCallbackQuery('❌ 未选择频道。');
@@ -86,14 +92,14 @@ export const channelRuleMenu = new Menu<AppContext>('channel-rule-menu')
     // TODO: Implement rule deletion conversation
     await ctx.answerCallbackQuery('🚧 删除功能将在后续版本中实现。');
   })
-  .row()
-  .text('🔙 返回', async (ctx) => {
+  .text('❌ 退出', async (ctx) => {
     delete ctx.session.configuringChannelId;
 
     await ctx.editMessageText(
       '👋 已退出频道规则管理。\n\n' +
         '如需管理其他频道，请重新发送 /manage_rules 命令。',
+      { reply_markup: { inline_keyboard: [] } },
     );
 
-    await ctx.answerCallbackQuery('已返回');
+    await ctx.answerCallbackQuery('已退出');
   });

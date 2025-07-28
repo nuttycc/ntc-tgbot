@@ -23,6 +23,9 @@ importers:
       '@grammyjs/router':
         specifier: ^2.0.0
         version: 2.0.0(grammy@1.37.0)
+      '@grammyjs/storage-free':
+        specifier: ^2.5.1
+        version: 2.5.1
       grammy:
         specifier: ^1.37.0
         version: 1.37.0
@@ -255,6 +258,9 @@ packages:
     engines: {node: ^12.20.0 || >=14.13.1}
     peerDependencies:
       grammy: ^1.0.0
+
+  '@grammyjs/storage-free@2.5.1':
+    resolution: {integrity: sha512-wW9R8zxP8qHe6aZh3HqU11ZPWGko2ou32v0GMo8Ck6dLaVVvzI+oBZO6rM9Ntb54jmCdq+CxgLKPY71pyCG7eg==}
 
   '@grammyjs/types@3.21.0':
     resolution: {integrity: sha512-IMj0EpmglPCICuyfGRx4ENKPSuzS2xMSoPgSPzHC6FtnWKDEmJLBP/GbPv/h3TAeb27txqxm/BUld+gbJk6ccQ==}
@@ -1136,6 +1142,12 @@ snapshots:
   '@grammyjs/router@2.0.0(grammy@1.37.0)':
     dependencies:
       grammy: 1.37.0
+
+  '@grammyjs/storage-free@2.5.1':
+    dependencies:
+      node-fetch: 2.7.0
+    transitivePeerDependencies:
+      - encoding
 
   '@grammyjs/types@3.21.0': {}
 
