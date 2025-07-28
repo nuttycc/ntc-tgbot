@@ -1,32 +1,30 @@
-import { parse } from "tldts";
-import { defaultRule, rules } from "@/config/tag.rules.ts";
-import type { Strategy, TagRule } from "@/types/tag.types.ts";
+import { parse } from 'tldts';
+import { defaultRule } from '@/config/tag.rules.ts';
+import type { Strategy, TagRule } from '@/types/tag.types.ts';
 
-function getRuleForUrl(domain: string): TagRule {
-  return (
-    rules.find((rule) => rule.domains.includes(domain)) || defaultRule
-  );
+function getRuleForUrl(domain: string, rules: TagRule[]): TagRule {
+  return rules.find((rule) => rule.domains.includes(domain)) || defaultRule;
 }
 
 function applyStrategy(
   strategy: Strategy,
   tldInfo: ReturnType<typeof parse>,
-  path: string | null
+  path: string | null,
 ): string | null {
   const { domainWithoutSuffix } = tldInfo;
 
   switch (strategy.type) {
-    case "sld":
+    case 'sld':
       return domainWithoutSuffix || null;
-    case "path":
-      return path?.split("/").filter(Boolean)[strategy.segment] || null;
-    case "path_last": {
-      const segments = path?.split("/").filter(Boolean);
+    case 'path':
+      return path?.split('/').filter(Boolean)[strategy.segment] || null;
+    case 'path_last': {
+      const segments = path?.split('/').filter(Boolean);
       return segments?.[segments.length - 1] || null;
     }
-    case "path_after": {
+    case 'path_after': {
       if (path?.startsWith(strategy.prefix)) {
-        return path.substring(strategy.prefix.length).split("/")[0] || null;
+        return path.substring(strategy.prefix.length).split('/')[0] || null;
       }
       return null;
     }
@@ -35,7 +33,7 @@ function applyStrategy(
   }
 }
 
-export function generateTagsFromUrl(url: string): string[] {
+export function generateTagsFromUrl(url: string, rules: TagRule[]): string[] {
   const parsedUrl = parse(url);
   const { domain } = parsedUrl;
 
@@ -48,7 +46,7 @@ export function generateTagsFromUrl(url: string): string[] {
     // Gracefully handle invalid URLs that URL constructor can't parse.
   }
 
-  const rule = getRuleForUrl(domain);
+  const rule = getRuleForUrl(domain, rules);
   const tags = new Set<string>();
 
   for (const strategy of rule.strategies) {
@@ -59,4 +57,4 @@ export function generateTagsFromUrl(url: string): string[] {
   }
 
   return Array.from(tags);
-} 
+}
