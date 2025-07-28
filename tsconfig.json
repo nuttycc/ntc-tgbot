@@ -2,10 +2,7 @@
   "compilerOptions": {
     "target": "esnext",
     "module": "esnext",
-    "types": [
-      "node",
-      "deno"
-    ],
+    "types": ["node", "deno"],
     "moduleResolution": "bundler",
     "baseUrl": "./src",
     "paths": {
@@ -33,9 +30,6 @@
     "declarationMap": true,
     "jsx": "react-jsx"
   },
-  "include": [
-    "src",
-    "main.ts"
-  ],
+  "include": ["src", "main.ts"],
   "exclude": ["node_modules", "dist"]
 }
