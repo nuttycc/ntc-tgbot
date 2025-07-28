@@ -1,16 +1,16 @@
-import { webhookCallback } from "grammy";
+import { webhookCallback } from 'grammy';
 // You might modify this to the correct way to import your `Bot` object.
-import bot from "./src/bot.ts";
+import bot from './src/bot.ts';
 
-const handleUpdate = webhookCallback(bot, "std/http");
+const handleUpdate = webhookCallback(bot, 'std/http');
 
-Deno.serve(async (req) => {
-  if (req.method === "POST") {
+Deno.serve({ port: 8080 }, async (req) => {
+  if (req.method === 'POST') {
     const url = new URL(req.url);
-    
+    console.log(`req.url: ${req.url}`);
     if (url.pathname.slice(1) === bot.token) {
       try {
-        console.log("Received update");
+        console.log('Received update');
         return await handleUpdate(req);
       } catch (err) {
         console.error(err);
