@@ -34,14 +34,6 @@ bot.use(createConversation(createRuleConversation, 'createRuleConversation'));
 bot.use(channelRuleMenu);
 bot.use(manageChannelMenu);
 
-// Examples
-// Use persistent session data in update handlers
-bot.on('message', async (ctx, next) => {
-  console.log('Received Message', ctx.message.text);
-  ctx.session.count = (ctx.session.count || 0) + 1;
-  await next();
-});
-
 // Features
 bot.use(autoTagFeature);
 bot.use(channelRulesFeature);

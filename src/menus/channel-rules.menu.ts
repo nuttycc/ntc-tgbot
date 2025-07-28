@@ -29,9 +29,13 @@ export const channelRuleMenu = new Menu<AppContext>('channel-rule-menu')
     }
 
     // Enter the rule creation conversation
-    console.log(`Entering createRuleConversation`);
-    await ctx.conversation.enter('createRuleConversation');
-    await ctx.answerCallbackQuery('开始创建新规则...');
+    try {
+      await ctx.conversation.enter('createRuleConversation');
+      await ctx.answerCallbackQuery('开始创建新规则...');
+    } catch (error) {
+      console.error('Failed to enter conversation:', error);
+      await ctx.answerCallbackQuery('❌ 无法启动规则创建流程，请重试。');
+    }
   })
   .text('📜 查看规则', async (ctx) => {
     if (!ctx.session.configuringChannelId) {

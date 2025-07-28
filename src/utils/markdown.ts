@@ -28,14 +28,14 @@ export function escapeMarkdownV2(text: string): string {
     '!',
   ];
 
-  let escaped = text;
+  // Create a single regex to match all special characters at once.
+  // The characters are escaped for use in the regex character class.
+  const regex = new RegExp(
+    `[${specialChars.map((c) => `\\${c}`).join('')}]`,
+    'g',
+  );
 
-  // Escape each special character
-  for (const char of specialChars) {
-    escaped = escaped.replace(new RegExp(`\\${char}`, 'g'), `\\${char}`);
-  }
-
-  return escaped;
+  return text.replace(regex, '\\$&');
 }
 
 /**

@@ -1,4 +1,4 @@
-import type { TagRule } from './tag.types.ts';
+import type { TagRule } from './tag.types';
 
 /**
  * Central storage for channel-specific rules
