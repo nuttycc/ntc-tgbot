@@ -47,7 +47,7 @@
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,json,md}": [
-      "prettier --write --experimental-cli",
+      "prettier --write",
       "oxlint --fix"
     ]
   }
