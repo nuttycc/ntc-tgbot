@@ -1,7 +1,7 @@
 import type { Context, SessionFlavor } from 'grammy';
 import type { EmojiFlavor } from '@grammyjs/emoji';
 import type { ConversationFlavor } from '@grammyjs/conversations';
-import type { TagRule } from './tag.types.ts';
+import type { TagRule, Strategy } from './tag.types.ts';
 
 /**
  * Session data structure for storing temporary state and persistent data
@@ -24,6 +24,32 @@ export interface SessionData {
    * Key: channel ID (as string for JSON compatibility), Value: array of rules
    */
   channelRules?: Record<string, TagRule[]>;
+
+  // Rule deletion flow state
+  /** Available domains for deletion selection */
+  deletionDomains?: string[];
+  /** Currently selected domain for deletion */
+  selectedDeletionDomain?: string;
+  /** Rules under selected domain for deletion */
+  domainRulesForDeletion?: TagRule[];
+  /** Index of selected rule for individual deletion */
+  selectedRuleIndex?: number;
+  /** Individual strategies for granular deletion */
+  strategyItemsForDeletion?: Array<{
+    ruleIndex: number;
+    strategyIndex: number;
+    strategy: Strategy;
+    domains: string[];
+    isFullRule: boolean;
+  }>;
+  /** Selected strategy item for deletion */
+  selectedStrategyItem?: {
+    ruleIndex: number;
+    strategyIndex: number;
+    strategy: Strategy;
+    domains: string[];
+    isFullRule: boolean;
+  };
 }
 
 /**

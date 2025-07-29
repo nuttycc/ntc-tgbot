@@ -218,6 +218,73 @@ export async function removeChannelRule(
 }
 
 /**
+ * Remove a specific strategy from a rule
+ * @param channelId The channel ID
+ * @param ruleIndex The index of the rule containing the strategy
+ * @param strategyIndex The index of the strategy to remove
+ * @returns True if the strategy was removed, false if indices were invalid
+ */
+export async function removeChannelRuleStrategy(
+  channelId: number,
+  ruleIndex: number,
+  strategyIndex: number,
+): Promise<boolean> {
+  try {
+    const sessionData = await getSessionData(channelId);
+    const channelKey = channelId.toString();
+    const existingRules = sessionData.channelRules?.[channelKey] || [];
+
+    if (ruleIndex < 0 || ruleIndex >= existingRules.length) {
+      return false;
+    }
+
+    const rule = existingRules[ruleIndex];
+    if (!rule || strategyIndex < 0 || strategyIndex >= rule.strategies.length) {
+      return false;
+    }
+
+    // Create updated rule with strategy removed
+    const updatedStrategies = rule.strategies.filter(
+      (_, index) => index !== strategyIndex,
+    );
+
+    // If no strategies left, remove the entire rule
+    if (updatedStrategies.length === 0) {
+      return await removeChannelRule(channelId, ruleIndex);
+    }
+
+    // Update the rule with remaining strategies
+    const updatedRule: TagRule = {
+      domains: rule.domains,
+      strategies: updatedStrategies,
+    };
+
+    const updatedRules = existingRules.map((r, index) =>
+      index === ruleIndex ? updatedRule : r,
+    );
+
+    if (!sessionData.channelRules) {
+      sessionData.channelRules = {};
+    }
+
+    sessionData.channelRules[channelKey] = updatedRules;
+
+    await saveSessionData(channelId, sessionData);
+
+    // Update cache
+    setCachedRules(channelId, updatedRules);
+
+    return true;
+  } catch (error) {
+    console.error(
+      `Failed to remove channel rule strategy for ${channelId}:`,
+      error,
+    );
+    throw error;
+  }
+}
+
+/**
  * Clear all rules for a channel
  * @param channelId The channel ID to clear rules for
  */
