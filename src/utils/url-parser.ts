@@ -1,4 +1,5 @@
 import { parse } from 'tldts';
+import { camelCase } from '@es-toolkit/es-toolkit';
 import { defaultRule } from '@/config/tag.rules.ts';
 import type { Strategy, TagRule } from '@/types/tag.types.ts';
 
@@ -52,7 +53,7 @@ export function generateTagsFromUrl(url: string, rules: TagRule[]): string[] {
   for (const strategy of rule.strategies) {
     const tag = applyStrategy(strategy, parsedUrl, pathname);
     if (tag) {
-      tags.add(tag);
+      tags.add(camelCase(tag));
     }
   }
 

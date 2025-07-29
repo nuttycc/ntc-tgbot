@@ -1,6 +1,9 @@
 # Dependencies
 node_modules/
+
 .cursor/
+.codebuddy/
+
 docs/
 
 .pnp
@@ -117,3 +120,4 @@ Thumbs.db
 
 # TernJS port file
 .tern-port 
+
