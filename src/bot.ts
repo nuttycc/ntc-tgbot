@@ -9,6 +9,7 @@ import { manageChannelMenu } from './menus/manage-channel.menu.ts';
 import { createRuleConversation } from './conversations/create-rule.conversation.ts';
 import { patchedFreeStorage } from './utils/patch.ts';
 import { initializeCloudStorage } from './storage/channel-rules.storage.ts';
+import { setupBotCommands } from './commands.ts';
 
 const bot = new Bot<AppContext>(process.env.BOT_TOKEN || '');
 
@@ -51,22 +52,14 @@ bot.catch((err) => {
   );
 });
 
+setupBotCommands(bot);
+
 if (process.env.LOCAL_DEV === '1') {
   bot.start({
     onStart: async (botInfo) => {
       console.log(
         `Bot @${botInfo.username} started at ${new Date().toUTCString()}`,
       );
-
-      // Set bot commands for better UX
-      await bot.api.setMyCommands([
-        {
-          command: 'manage_rules',
-          description: '管理频道的自动标签规则 (仅私聊)',
-        },
-      ]);
-
-      console.log('Bot commands registered successfully');
     },
   });
 }
