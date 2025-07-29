@@ -8,8 +8,15 @@ import { channelRuleMenu } from './menus/channel-rules.menu.ts';
 import { manageChannelMenu } from './menus/manage-channel.menu.ts';
 import { createRuleConversation } from './conversations/create-rule.conversation.ts';
 import { patchedFreeStorage } from './utils/patch.ts';
+import { initializeCloudStorage } from './storage/channel-rules.storage.ts';
 
 const bot = new Bot<AppContext>(process.env.BOT_TOKEN || '');
+
+// Create storage adapter
+const storageAdapter = patchedFreeStorage<SessionData>(bot.token);
+
+// Initialize cloud storage for channel rules
+initializeCloudStorage(storageAdapter);
 
 // Session middleware must be installed before conversations
 bot.use(
@@ -17,7 +24,7 @@ bot.use(
     initial(): SessionData {
       return {};
     },
-    storage: patchedFreeStorage<SessionData>(bot.token),
+    storage: storageAdapter,
   }),
 );
 

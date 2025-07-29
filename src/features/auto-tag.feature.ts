@@ -24,7 +24,7 @@ router.route('auto_tag', async (ctx) => {
 
     // Get channel ID and rules
     const channelId = channelPost.chat.id;
-    const channelRules = getChannelRules(channelId);
+    const channelRules = await getChannelRules(channelId);
 
     console.log('channelRules', channelRules);
 

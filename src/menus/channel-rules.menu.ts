@@ -3,7 +3,6 @@ import type { AppContext } from '@/types/bot.types.ts';
 import { getChannelRules } from '@/storage/channel-rules.storage.ts';
 import {
   escapeMarkdownV2,
-  formatListForMarkdownV2,
   formatDomainsForMarkdownV2,
   formatStrategiesForMarkdownV2,
 } from '@/utils/markdown.ts';
@@ -47,7 +46,7 @@ export const channelRuleMenu = new Menu<AppContext>('channel-rule-menu')
     }
 
     const channelId = ctx.session.configuringChannelId;
-    const rules = getChannelRules(channelId);
+    const rules = await getChannelRules(channelId);
 
     if (rules.length === 0) {
       await ctx.editMessageText(
@@ -86,7 +85,7 @@ export const channelRuleMenu = new Menu<AppContext>('channel-rule-menu')
     }
 
     const channelId = ctx.session.configuringChannelId;
-    const rules = getChannelRules(channelId);
+    const rules = await getChannelRules(channelId);
 
     if (rules.length === 0) {
       await ctx.answerCallbackQuery('❌ 没有可删除的规则。');

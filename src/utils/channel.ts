@@ -1,4 +1,4 @@
-import type { AppContext } from '@/types/bot.types';
+import type { AppContext } from '@/types/bot.types.ts';
 
 /**
  * Extracts channel identifier from various input formats.

@@ -306,7 +306,7 @@ export async function createRuleConversation(
       strategies,
     };
 
-    addChannelRule(channelId, newRule);
+    await addChannelRule(channelId, newRule);
 
     // Format strategies for display
     const strategiesText = formatStrategiesForMarkdownV2(strategies, '');
