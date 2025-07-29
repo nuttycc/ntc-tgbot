@@ -1,5 +1,5 @@
 import { parse } from 'tldts';
-import { camelCase } from '@es-toolkit/es-toolkit';
+import { camelCase } from 'es-toolkit';
 import { defaultRule } from '@/config/tag.rules.ts';
 import type { Strategy, TagRule } from '@/types/tag.types.ts';
 
