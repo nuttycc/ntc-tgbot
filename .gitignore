@@ -1,22 +1,18 @@
 # Dependencies
 node_modules/
 
+
+# IDE
+.vscode/
 .cursor/
 .codebuddy/
 
+# Docs
 docs/
 
+# Pnpm
 .pnp
 .pnp.js
-
-# Testing
-coverage/
-*.lcov
-.nyc_output
-
-# Production builds
-dist/
-build/
 
 # Environment variables
 .env
@@ -24,6 +20,10 @@ build/
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Production builds
+dist/
+build/
 
 # Logs
 logs

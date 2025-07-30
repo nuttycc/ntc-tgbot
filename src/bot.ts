@@ -13,6 +13,7 @@ import { initializeCloudStorage } from '@/storage/channel-rules.storage.ts';
 import { setupBotCommands } from '@/commands.ts';
 import { getLogger } from '@/utils/logset.ts';
 import testGroupFeature from '@/features/test-group.ts';
+import startFeature from '@/features/start.feature.ts';
 
 const logger = getLogger(['bot']);
 
@@ -40,18 +41,22 @@ bot.use(emojiParser());
 // Conversations middleware
 bot.use(conversations());
 
-// Register conversations
+// Register conversation
 bot.use(createConversation(createRuleConversation, 'createRuleConversation'));
 
-// Register menus
+// Register keyboard menus
 bot.use(channelRuleMenu);
 bot.use(manageChannelMenu);
 
-// Features
+// Register features
 bot.use(autoTagFeature);
 bot.use(channelRulesFeature);
 bot.use(requestChatFeature);
 bot.use(testGroupFeature);
+bot.use(startFeature);
+
+// Register bot commands
+setupBotCommands(bot);
 
 bot.catch((err) => {
   const ctx = err.ctx;
