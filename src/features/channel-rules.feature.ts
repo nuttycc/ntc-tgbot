@@ -6,6 +6,9 @@ import {
   extractChannelIdentifier,
   validateChannelAccess,
 } from '@/utils/channel.ts';
+import { getLogger } from '@/utils/logset.ts';
+
+const logger = getLogger(['features', 'channel-rules']);
 
 const router = new Router<AppContext>((ctx) => {
   // This feature is only available in private chats.
@@ -104,7 +107,7 @@ router.route('text_identifier', async (ctx) => {
       channelUsername,
     );
   } catch (error) {
-    console.error('Error processing channel identifier:', error);
+    logger.error('Error processing channel identifier', { error });
 
     // Provide helpful error messages
     if (error && typeof error === 'object' && 'error_code' in error) {

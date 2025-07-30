@@ -10,21 +10,25 @@ import {
   formatDomainsForMarkdownV2,
   formatStrategiesForMarkdownV2,
 } from '@/utils/markdown.ts';
+import { getLogger } from '@/utils/logset.ts';
+
+const logger = getLogger(['menus', 'channel-rules']);
 
 /**
  * Main menu for channel rule management
  */
 export const channelRuleMenu = new Menu<AppContext>('channel-rule-menu')
   .text('➕ 添加规则', async (ctx) => {
-    console.log(
+    logger.debug(
       `ctx.session.configuringChannelId: ${ctx.session.configuringChannelId}`,
     );
 
     if (!ctx.session.configuringChannelId) {
-      console.log(`ctx.session.configuringChannelId is undefined`);
-      await ctx.answerCallbackQuery(
-        '❌ 未选择频道。请先转发频道消息进行授权。',
-      );
+      logger.debug(`ctx.session.configuringChannelId is undefined`);
+      await ctx.answerCallbackQuery({
+        text: '❌ 未选择频道。请先转发频道消息进行授权。',
+        show_alert: true,
+      });
       return;
     }
 
@@ -33,8 +37,11 @@ export const channelRuleMenu = new Menu<AppContext>('channel-rule-menu')
       await ctx.conversation.enter('createRuleConversation');
       await ctx.answerCallbackQuery('开始创建新规则...');
     } catch (error) {
-      console.error('Failed to enter conversation:', error);
-      await ctx.answerCallbackQuery('❌ 无法启动规则创建流程，请重试。');
+      logger.error('Failed to enter conversation', { error });
+      await ctx.answerCallbackQuery({
+        text: '❌ 未知错误，无法启动规则创建流程，请重试。',
+        show_alert: true,
+      });
     }
   })
   .text('📜 查看规则', async (ctx) => {
@@ -81,7 +88,10 @@ export const channelRuleMenu = new Menu<AppContext>('channel-rule-menu')
   // Second row: Delete and Exit (2 buttons)
   .text('🗑️ 删除策略', async (ctx) => {
     if (!ctx.session.configuringChannelId) {
-      await ctx.answerCallbackQuery('❌ 未选择频道。');
+      await ctx.answerCallbackQuery({
+        text: '❌ 未选择频道。',
+        show_alert: true,
+      });
       return;
     }
 
@@ -89,7 +99,10 @@ export const channelRuleMenu = new Menu<AppContext>('channel-rule-menu')
     const rules = await getChannelRules(channelId);
 
     if (rules.length === 0) {
-      await ctx.answerCallbackQuery('❌ 没有可删除的策略。');
+      await ctx.answerCallbackQuery({
+        text: '❌ 没有可删除的策略。',
+        show_alert: false,
+      });
       return;
     }
 
@@ -120,7 +133,10 @@ export const channelRuleMenu = new Menu<AppContext>('channel-rule-menu')
       { reply_markup: { inline_keyboard: [] } },
     );
 
-    await ctx.answerCallbackQuery('已退出');
+    await ctx.answerCallbackQuery({
+      text: '已退出',
+      show_alert: false,
+    });
   });
 
 /**
@@ -190,7 +206,10 @@ const deleteDomainSelectionMenu = new Menu<AppContext>(
     delete ctx.session.selectedRuleIndex;
 
     await ctx.menu.nav('channel-rule-menu');
-    await ctx.answerCallbackQuery('已返回主菜单');
+    await ctx.answerCallbackQuery({
+      text: '已返回主菜单',
+      show_alert: false,
+    });
   });
 
 /**
@@ -324,7 +343,10 @@ const deleteItemSelectionMenu = new Menu<AppContext>('delete-item-selection')
             ctx.session.strategyItemsForDeletion?.[itemIndex];
 
           if (!selectedItem) {
-            await ctx.answerCallbackQuery('策略不存在，请重试');
+            await ctx.answerCallbackQuery({
+              text: '策略不存在，请重试',
+              show_alert: true,
+            });
             return;
           }
 
@@ -419,7 +441,7 @@ const confirmDeleteAllMenu = new Menu<AppContext>('confirm-delete-all')
         },
       );
     } catch (error) {
-      console.error('Failed to delete all strategies:', error);
+      logger.error('Failed to delete all strategies', { error });
       await ctx.editMessageText(
         `${escapeMarkdownV2('❌ 删除失败')}\n\n` +
           `${escapeMarkdownV2('操作过程中发生错误，请重试。')}`,
@@ -548,7 +570,7 @@ const confirmDeleteItemMenu = new Menu<AppContext>('confirm-delete-item')
         );
       }
     } catch (error) {
-      console.error('Failed to delete item:', error);
+      logger.error('Failed to delete item', { error });
       await ctx.editMessageText(
         `${escapeMarkdownV2('❌ 删除失败')}\n\n` +
           `${escapeMarkdownV2('操作过程中发生错误，请重试。')}`,

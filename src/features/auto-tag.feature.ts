@@ -1,16 +1,22 @@
+import type { AppContext } from '@/types/bot.types.ts';
+import type { Message } from 'grammy/types';
 import { Composer } from 'grammy';
 import { Router } from '@grammyjs/router';
 import { generateTagsFromUrl } from '@/utils/url-parser.ts';
-import type { AppContext } from '@/types/bot.types.ts';
 import { getChannelRules } from '@/storage/channel-rules.storage.ts';
 import { rules as defaultRules } from '@/config/tag.rules.ts';
+import { getLogger } from '@/utils/logset.ts';
+
+const logger = getLogger(['features', 'auto-tag']);
 
 const composer = new Composer<AppContext>();
 
 const router = new Router<AppContext>((ctx) => {
+  // Only route for channel posts with url entities
   if (ctx.channelPost?.entities?.some((e) => e.type === 'url')) {
     return 'auto_tag';
   }
+
   return undefined;
 });
 
@@ -26,12 +32,8 @@ router.route('auto_tag', async (ctx) => {
     const channelId = channelPost.chat.id;
     const channelRules = await getChannelRules(channelId);
 
-    // console.log('channelRules', channelRules);
-
     // Merge rules: channel rules take priority over default rules
     const effectiveRules = [...channelRules, ...defaultRules];
-
-    // console.log('effectiveRules', effectiveRules);
 
     const tags = new Set<string>();
 
@@ -48,8 +50,6 @@ router.route('auto_tag', async (ctx) => {
 
     const originalText = channelPost.text;
 
-    console.log('OriginalText:', JSON.stringify(originalText));
-
     const notHasTags = Array.from(tags).filter(
       (tag) => !originalText.includes(`#${tag}`),
     );
@@ -58,19 +58,12 @@ router.route('auto_tag', async (ctx) => {
 
     const newText = `${originalText}\n\n${notHasTags.map((tag) => `#${tag}`).join(' ')}`;
 
-    console.log('NewText:', JSON.stringify(newText));
-
     if (newText.length > 4096) {
-      console.warn(
-        'Message length exceeds 4096, cannot add tags:',
-        newText.length,
-      );
+      logger.warn(`Message length ${newText.length} > 4096, cannot add tags`);
       return;
     }
 
-    // console.log('Before', {entities: channelPost.entities, oldText: channelPost.text});
-
-    await ctx.api.editMessageText(
+    const editedMessage = (await ctx.api.editMessageText(
       channelPost.chat.id,
       channelPost.message_id,
       newText,
@@ -80,18 +73,17 @@ router.route('auto_tag', async (ctx) => {
           url: urlEntities[0]?.text ?? '',
         },
       },
-    );
+    )) as unknown as Message;
 
-    // if(editedMessage !== true && typeof editedMessage !== "string" && 'entities' in editedMessage && 'text' in editedMessage) {
-    //   console.log('After edit', {entities: editedMessage.entities, newText: editedMessage.text});
-    // }
-
-    console.log('Edited channel post with tags:', {
+    logger.debug('Edited channel post with tags', {
       tags: Array.from(tags),
-      timestamp: new Date().toISOString(),
+      old: channelPost.text,
+      new: editedMessage.text,
+      oldEntities: channelPost.entities?.map((e) => e.type),
+      newEntities: editedMessage.entities?.map((e) => e.type),
     });
   } catch (error) {
-    console.error('Error in auto-tagging:', error);
+    logger.error('Error in auto-tagging', { error });
   }
 });
 

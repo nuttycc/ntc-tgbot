@@ -1,4 +1,7 @@
 import type { AppContext } from '@/types/bot.types.ts';
+import { getLogger } from '@/utils/logset.ts';
+
+const logger = getLogger(['utils', 'channel']);
 
 /**
  * Extracts channel identifier from various input formats.
@@ -47,7 +50,11 @@ export async function validateChannelAccess(
 ): Promise<boolean> {
   const userId = ctx.from?.id;
   if (!userId) {
-    await ctx.reply('❌ 无法获取用户信息。');
+    await ctx.reply('❌ 无法获取用户信息。', {
+      reply_markup: {
+        inline_keyboard: [],
+      },
+    });
     return false;
   }
 
@@ -60,6 +67,11 @@ export async function validateChannelAccess(
           '请确保：\n' +
           '1. 将我添加到频道中\n' +
           '2. 给我读取消息的权限',
+        {
+          reply_markup: {
+            inline_keyboard: [],
+          },
+        },
       );
       return false;
     }
@@ -70,18 +82,28 @@ export async function validateChannelAccess(
       await ctx.reply(
         `❌ 您不是频道 "${channelTitle}" 的管理员。\n\n` +
           '只有频道的创建者或管理员才能配置自动标签规则。',
+        {
+          reply_markup: {
+            inline_keyboard: [],
+          },
+        },
       );
       return false;
     }
 
     return true;
   } catch (error) {
-    console.error('Error checking channel permissions:', error);
+    logger.error('Error checking channel permissions', { error });
     await ctx.reply(
       '❌ 检查权限时发生错误。请确保：\n' +
         '1. 频道设置正确\n' +
         '2. 我有足够的权限访问频道信息\n' +
         '3. 您有管理该频道的权限',
+      {
+        reply_markup: {
+          inline_keyboard: [],
+        },
+      },
     );
     return false;
   }

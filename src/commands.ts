@@ -1,5 +1,8 @@
 import type { Bot } from 'grammy';
 import type { AppContext } from './types/bot.types';
+import { getLogger } from '@/utils/logset.ts';
+
+const logger = getLogger(['commands']);
 
 export async function setupBotCommands(bot: Bot<AppContext>) {
   // Set bot commands for better UX
@@ -14,5 +17,5 @@ export async function setupBotCommands(bot: Bot<AppContext>) {
     },
   ]);
 
-  console.log('Bot commands registered');
+  logger.info('Bot commands registered');
 }

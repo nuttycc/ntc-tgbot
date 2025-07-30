@@ -1,16 +1,20 @@
-import autoTagFeature from './features/auto-tag.feature.ts';
-import channelRulesFeature from './features/channel-rules.feature.ts';
-import requestChatFeature from './features/request-chat.feature.ts';
+import autoTagFeature from '@/features/auto-tag.feature.ts';
+import channelRulesFeature from '@/features/channel-rules.feature.ts';
+import requestChatFeature from '@/features/request-chat.feature.ts';
 import type { AppContext, SessionData } from '@/types/bot.types.ts';
-import { Bot, session } from 'grammy';
+import { Bot, GrammyError, HttpError, session } from 'grammy';
 import { emojiParser } from '@grammyjs/emoji';
 import { conversations, createConversation } from '@grammyjs/conversations';
-import { channelRuleMenu } from './menus/channel-rules.menu.ts';
-import { manageChannelMenu } from './menus/manage-channel.menu.ts';
-import { createRuleConversation } from './conversations/create-rule.conversation.ts';
-import { patchedFreeStorage } from './utils/patch.ts';
-import { initializeCloudStorage } from './storage/channel-rules.storage.ts';
-import { setupBotCommands } from './commands.ts';
+import { channelRuleMenu } from '@/menus/channel-rules.menu.ts';
+import { manageChannelMenu } from '@/menus/manage-channel.menu.ts';
+import { createRuleConversation } from '@/conversations/create-rule.conversation.ts';
+import { patchedFreeStorage } from '@/utils/patch.ts';
+import { initializeCloudStorage } from '@/storage/channel-rules.storage.ts';
+import { setupBotCommands } from '@/commands.ts';
+import { getLogger } from '@/utils/logset.ts';
+import testGroupFeature from '@/features/test-group.ts';
+
+const logger = getLogger(['bot']);
 
 const bot = new Bot<AppContext>(process.env.BOT_TOKEN || '');
 
@@ -47,11 +51,21 @@ bot.use(manageChannelMenu);
 bot.use(autoTagFeature);
 bot.use(channelRulesFeature);
 bot.use(requestChatFeature);
+bot.use(testGroupFeature);
 
 bot.catch((err) => {
-  console.error(
-    `Error in bot \n Message: ${err.message} \n Stack: ${err.stack}`,
+  const ctx = err.ctx;
+  logger.error(
+    `Error while handling update ${ctx.update.message?.text?.slice(0, 10)}...`,
   );
+  const e = err.error;
+  if (e instanceof GrammyError) {
+    logger.error(`Error in request: ${e.description}`);
+  } else if (e instanceof HttpError) {
+    logger.error(`Could not contact Telegram: ${e.message}`);
+  } else {
+    logger.error(`Unknown error:`, { error: e });
+  }
 });
 
 setupBotCommands(bot);
@@ -59,8 +73,8 @@ setupBotCommands(bot);
 if (process.env.LOCAL_DEV === '1') {
   bot.start({
     onStart: async (botInfo) => {
-      console.log(
-        `Bot @${botInfo.username} started at ${new Date().toUTCString()}`,
+      logger.info(
+        `Bot @${botInfo.username} running in ${process.env.NODE_ENV} mode`,
       );
     },
   });

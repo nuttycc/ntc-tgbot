@@ -1,28 +1,30 @@
 import { webhookCallback } from 'grammy';
-// You might modify this to the correct way to import your `Bot` object.
 import bot from './src/bot.ts';
+import { getLogger } from '@/utils/logset.ts';
+
+const logger = getLogger(['webhook']);
 
 const handleUpdate = webhookCallback(bot, 'std/http');
 
-Deno.serve({ port: 8080 }, async (req) => {
-  if (req.method === 'POST') {
-    const url = new URL(req.url);
-    // Do not log full URL to avoid exposing the bot token.
-    console.log(
-      `request from ${
-        req.headers.get('x-forwarded-for') ??
-        req.headers.get('x-real-ip') ??
-        'unknown'
-      }`,
-    );
-    if (url.pathname.slice(1) === bot.token) {
-      try {
-        console.log('Received update');
+Deno.serve(
+  {
+    port: 8080,
+    onListen: ({ port, hostname }) =>
+      logger.info(`Bot webhook server running on ${hostname}:${port} ...`),
+  },
+  async (req) => {
+    if (req.method === 'POST') {
+      const url = new URL(req.url);
+
+      logger.debug(`Received new request from ${url.origin}`);
+
+      if (url.pathname.slice(1) === bot.token) {
+        logger.debug(`handling update...`);
+
         return await handleUpdate(req);
-      } catch (err) {
-        console.error(err);
       }
     }
-  }
-  return new Response();
-});
+
+    return new Response();
+  },
+);

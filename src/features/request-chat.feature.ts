@@ -3,6 +3,9 @@ import type { AppContext } from '@/types/bot.types.ts';
 import { CHANNEL_REQUEST_ID } from '@/menus/manage-channel.menu.ts';
 import { validateChannelAccess } from '@/utils/channel.ts';
 import { channelRuleMenu } from '@/menus/channel-rules.menu.ts';
+import { getLogger } from '@/utils/logset.ts';
+
+const logger = getLogger(['features', 'request-chat']);
 
 const router = new Router<AppContext>((ctx) => {
   // This feature is only available in private chats
@@ -63,7 +66,7 @@ router.route('channel_shared', async (ctx) => {
       channelUsername,
     );
   } catch (error) {
-    console.error('Error processing shared channel:', error);
+    logger.error('Error processing shared channel', { error });
 
     if (error && typeof error === 'object' && 'error_code' in error) {
       const errorCode = (error as any).error_code;

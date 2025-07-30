@@ -1,6 +1,9 @@
 import type { StorageAdapter } from 'grammy';
 import type { TagRule } from '@/types/tag.types.ts';
 import type { SessionData } from '@/types/bot.types.ts';
+import { getLogger } from '@/utils/logset.ts';
+
+const logger = getLogger(['storage', 'channel-rules']);
 
 /**
  * Cloud storage instance for channel rules
@@ -82,10 +85,9 @@ async function getSessionData(channelId: number): Promise<SessionData> {
     const data = await storageAdapter.read(key);
     return data || {};
   } catch (error) {
-    console.error(
-      `Failed to read from cloud storage for channel ${channelId}:`,
+    logger.error(`Failed to read from cloud storage for channel ${channelId}`, {
       error,
-    );
+    });
     return {};
   }
 }
@@ -109,10 +111,9 @@ async function saveSessionData(
     const key = getStorageKey(channelId);
     await storageAdapter.write(key, data);
   } catch (error) {
-    console.error(
-      `Failed to write to cloud storage for channel ${channelId}:`,
+    logger.error(`Failed to write to cloud storage for channel ${channelId}`, {
       error,
-    );
+    });
     throw error;
   }
 }
@@ -138,7 +139,7 @@ export async function getChannelRules(channelId: number): Promise<TagRule[]> {
 
     return rules;
   } catch (error) {
-    console.error(`Failed to get channel rules for ${channelId}:`, error);
+    logger.error(`Failed to get channel rules for ${channelId}`, { error });
     return [];
   }
 }
@@ -171,7 +172,7 @@ export async function addChannelRule(
     // Update cache
     setCachedRules(channelId, updatedRules);
   } catch (error) {
-    console.error(`Failed to add channel rule for ${channelId}:`, error);
+    logger.error(`Failed to add channel rule for ${channelId}`, { error });
     throw error;
   }
 }
@@ -212,7 +213,7 @@ export async function removeChannelRule(
 
     return true;
   } catch (error) {
-    console.error(`Failed to remove channel rule for ${channelId}:`, error);
+    logger.error(`Failed to remove channel rule for ${channelId}`, { error });
     throw error;
   }
 }
@@ -276,10 +277,9 @@ export async function removeChannelRuleStrategy(
 
     return true;
   } catch (error) {
-    console.error(
-      `Failed to remove channel rule strategy for ${channelId}:`,
+    logger.error(`Failed to remove channel rule strategy for ${channelId}`, {
       error,
-    );
+    });
     throw error;
   }
 }
@@ -301,7 +301,7 @@ export async function clearChannelRules(channelId: number): Promise<void> {
     const key = getStorageKey(channelId);
     localCache.delete(key);
   } catch (error) {
-    console.error(`Failed to clear channel rules for ${channelId}:`, error);
+    logger.error(`Failed to clear channel rules for ${channelId}`, { error });
     throw error;
   }
 }
@@ -332,7 +332,7 @@ export async function getStorageStats(): Promise<{
       cacheSize,
     };
   } catch (error) {
-    console.error('Failed to get storage stats:', error);
+    logger.error('Failed to get storage stats', { error });
     return {
       channelCount: 0,
       totalRules: 0,

@@ -9,6 +9,9 @@ import {
   formatStrategiesForMarkdownV2,
 } from '@/utils/markdown.ts';
 import { getHostname } from 'tldts';
+import { getLogger } from '@/utils/logset.ts';
+
+const logger = getLogger(['conversations', 'create-rule']);
 
 /**
  * Conversation for creating a new tag rule
@@ -325,12 +328,13 @@ export async function createRuleConversation(
       },
     );
   } catch (error) {
-    console.error('Error in createRuleConversation:', error);
+    logger.error('Error in createRuleConversation');
     await ctx.api.editMessageText(
       ctx.chat.id,
       initialMessage.message_id,
       '❌ 创建规则时发生错误。请稍后重试。\n\n' +
         '如果问题持续存在，请联系管理员。',
     );
+    throw error;
   }
 }
