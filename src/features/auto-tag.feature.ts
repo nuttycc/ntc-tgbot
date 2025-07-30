@@ -26,12 +26,12 @@ router.route('auto_tag', async (ctx) => {
     const channelId = channelPost.chat.id;
     const channelRules = await getChannelRules(channelId);
 
-    console.log('channelRules', channelRules);
+    // console.log('channelRules', channelRules);
 
     // Merge rules: channel rules take priority over default rules
     const effectiveRules = [...channelRules, ...defaultRules];
 
-    console.log('effectiveRules', effectiveRules);
+    // console.log('effectiveRules', effectiveRules);
 
     const tags = new Set<string>();
 
@@ -48,6 +48,8 @@ router.route('auto_tag', async (ctx) => {
 
     const originalText = channelPost.text;
 
+    console.log('OriginalText:', JSON.stringify(originalText));
+
     const notHasTags = Array.from(tags).filter(
       (tag) => !originalText.includes(`#${tag}`),
     );
@@ -56,19 +58,40 @@ router.route('auto_tag', async (ctx) => {
 
     const newText = `${originalText}\n\n${notHasTags.map((tag) => `#${tag}`).join(' ')}`;
 
+    console.log('NewText:', JSON.stringify(newText));
+
     if (newText.length > 4096) {
-      console.warn('Message too long, cannot add tags:', newText.length);
+      console.warn(
+        'Message length exceeds 4096, cannot add tags:',
+        newText.length,
+      );
       return;
     }
 
-    await ctx.editMessageText(newText);
+    // console.log('Before', {entities: channelPost.entities, oldText: channelPost.text});
+
+    await ctx.api.editMessageText(
+      channelPost.chat.id,
+      channelPost.message_id,
+      newText,
+      {
+        link_preview_options: {
+          is_disabled: false,
+          url: urlEntities[0]?.text ?? '',
+        },
+      },
+    );
+
+    // if(editedMessage !== true && typeof editedMessage !== "string" && 'entities' in editedMessage && 'text' in editedMessage) {
+    //   console.log('After edit', {entities: editedMessage.entities, newText: editedMessage.text});
+    // }
 
     console.log('Edited channel post with tags:', {
       tags: Array.from(tags),
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error('Error editing channel post:', error);
+    console.error('Error in auto-tagging:', error);
   }
 });
 

@@ -1,9 +1,10 @@
+import autoTagFeature from './features/auto-tag.feature.ts';
+import channelRulesFeature from './features/channel-rules.feature.ts';
+import requestChatFeature from './features/request-chat.feature.ts';
+import type { AppContext, SessionData } from '@/types/bot.types.ts';
 import { Bot, session } from 'grammy';
 import { emojiParser } from '@grammyjs/emoji';
 import { conversations, createConversation } from '@grammyjs/conversations';
-import type { AppContext, SessionData } from '@/types/bot.types.ts';
-import autoTagFeature from './features/auto-tag.feature.ts';
-import channelRulesFeature from './features/channel-rules.feature.ts';
 import { channelRuleMenu } from './menus/channel-rules.menu.ts';
 import { manageChannelMenu } from './menus/manage-channel.menu.ts';
 import { createRuleConversation } from './conversations/create-rule.conversation.ts';
@@ -45,6 +46,7 @@ bot.use(manageChannelMenu);
 // Features
 bot.use(autoTagFeature);
 bot.use(channelRulesFeature);
+bot.use(requestChatFeature);
 
 bot.catch((err) => {
   console.error(

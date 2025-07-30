@@ -13,12 +13,9 @@ import {
 
 /**
  * Main menu for channel rule management
- * Layout optimized: 2-3 buttons per row
  */
 export const channelRuleMenu = new Menu<AppContext>('channel-rule-menu')
-  // First row: Add and View (2 buttons)
   .text('➕ 添加规则', async (ctx) => {
-    // Check if there's a channel being configured
     console.log(
       `ctx.session.configuringChannelId: ${ctx.session.configuringChannelId}`,
     );
