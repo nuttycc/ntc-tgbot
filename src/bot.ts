@@ -73,8 +73,6 @@ bot.catch((err) => {
   }
 });
 
-setupBotCommands(bot);
-
 if (process.env.LOCAL_DEV === '1') {
   bot.start({
     onStart: async (botInfo) => {
