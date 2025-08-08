@@ -20,7 +20,9 @@ function getOriginalText(post: Message | undefined): string | undefined {
 function collectUrlEntities(
   post: Message,
 ): Array<{ offset: number; length: number }> {
-  const entities: MessageEntity[] = (post.entities ?? post.caption_entities ?? []) as MessageEntity[];
+  const entities: MessageEntity[] = (post.entities ??
+    post.caption_entities ??
+    []) as MessageEntity[];
   const urlEntities = entities.filter((e) => e.type === 'url');
   return urlEntities.map((e) => ({
     offset: e.offset ?? 0,
@@ -56,7 +58,9 @@ function computeTags(urls: string[], effectiveRules: TagRule[]): Set<string> {
 }
 
 function buildNewText(originalText: string, tags: Set<string>): string | null {
-  const missingTags = Array.from(tags).filter((tag) => !originalText.includes(`#${tag}`));
+  const missingTags = Array.from(tags).filter(
+    (tag) => !originalText.includes(`#${tag}`),
+  );
   if (missingTags.length === 0) return null;
   return `${originalText}\n\n${missingTags.map((t) => `#${t}`).join(' ')}`;
 }
@@ -73,12 +77,17 @@ async function editMessagePreservingSemantics(
       return undefined;
     }
 
-    return (await ctx.api.editMessageText(post.chat.id, post.message_id, newText, {
-      link_preview_options: {
-        is_disabled: false,
-        url: firstUrl,
+    return (await ctx.api.editMessageText(
+      post.chat.id,
+      post.message_id,
+      newText,
+      {
+        link_preview_options: {
+          is_disabled: false,
+          url: firstUrl,
+        },
       },
-    })) as unknown as Message;
+    )) as unknown as Message;
   }
 
   if (post.caption) {
@@ -133,7 +142,9 @@ async function handleAutoTag(ctx: AppContext) {
     new: editedMessage?.text ?? editedMessage?.caption,
     oldEntities: (post.entities ?? post.caption_entities)?.map((e) => e.type),
     newEntities: (
-      editedMessage?.entities ?? editedMessage?.caption_entities ?? []
+      editedMessage?.entities ??
+      editedMessage?.caption_entities ??
+      []
     ).map((e) => e.type),
   });
 }
